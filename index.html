@@ -1,0 +1,67 @@
+    <form onsubmit="return sendMessage();">
+        <input id="message" placeholder="Enter message" autocomplete="off">
+        <input type="submit">
+    </form>
+
+    
+    <ul id="messages"></ul> 
+
+
+<script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-database.js"></script>
+
+<script>
+
+    var firebaseConfig = {
+        apiKey: "AIzaSyBdau5r7ewp_qZ1z8H4BhuY_bAqIYJ1O-4",
+        authDomain: "talkroom-ef5f5.firebaseapp.com",
+        databaseURL: "https://talkroom-ef5f5-default-rtdb.firebaseio.com",
+        projectId: "talkroom-ef5f5",
+        storageBucket: "talkroom-ef5f5.appspot.com",
+        messagingSenderId: "945650107229",
+        appId: "1:945650107229:web:65b3ee36f6986a027fdeb4"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+
+    var myName = prompt("Enter your Name")
+
+    function sendMessage() {
+        
+        var message = document.getElementById("message").value;
+
+        firebase.database().ref("messages").push().set({
+            "sender": myName,
+            "message": message
+        });
+
+        return false;
+    }
+
+    firebase.database().ref("messages").on("child_added", function (snapshot) {
+
+        var html = "";
+        html += "<li id='message-" + snapshot.key + "'>";
+
+        if (snapshot.val().sender == myName) {
+            html += "<button data-id='" + snapshot.key + "' onclick='deleteMessage(this);'>";
+                html += "Delete";
+            html += "</button>";
+        }
+        html += snapshot.val().sender + ": " + snapshot.val().message;
+        html += "</li>";
+
+        document.getElementById("messages").innerHTML += html;
+    });
+
+    function deleteMessage(self) {
+
+        var messageId = self.getAttribute("data-id");
+        firebase.database().ref("messages").child(messageId).remove();
+    }
+
+    firebase.database().ref("messages").on("child_removed", function (snapshot) {
+        document.getElementById("message-" + snapshot.key).innerHTML = "This message has been removed";
+    });
+
+</script>
