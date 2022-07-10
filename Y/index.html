@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkRoom | A Web Based Simple Chatroom</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: antiquewhite;
+            font-style: oblique;
+            align-items: center;
+            justify-content: center;
+        }
+
+        li {
+            list-style: none;
+        }
+        
+    </style>
+</head>
+<body class="text-center">
+    
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <h2 style="margin-top: 30px;">TalkRoom | A Web Based Chatroom</h2>
+            <small style=" margin-bottom: 30px;">Check my other Projects <a href="https://github.com/badal-ag">Here</a></small>
+            <div>   
+                <form onsubmit="return sendMessage();">
+                    <input class="form-control" id="message" placeholder="Enter message" autocomplete="off">
+                    <input class="btn btn-success " type="submit">
+                </form>
+                <ul id="messages"></ul> 
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-database.js"></script>
+
+    <script>
+
+        var firebaseConfig = {
+            apiKey: "AIzaSyBdau5r7ewp_qZ1z8H4BhuY_bAqIYJ1O-4",
+            authDomain: "talkroom-ef5f5.firebaseapp.com",
+            databaseURL: "https://talkroom-ef5f5-default-rtdb.firebaseio.com",
+            projectId: "talkroom-ef5f5",
+            storageBucket: "talkroom-ef5f5.appspot.com",
+            messagingSenderId: "945650107229",
+            appId: "1:945650107229:web:65b3ee36f6986a027fdeb4"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+
+        var myName = prompt("Enter your Name")
+
+        function sendMessage() {
+            
+            var message = document.getElementById("message").value;
+
+            firebase.database().ref("messages").push().set({
+                "sender": myName,
+                "message": message
+            });
+
+            return false;
+        }
+
+        firebase.database().ref("messages").on("child_added", function (snapshot) {
+
+            var html = "";
+            html += "<li id='message-" + snapshot.key + "'>";
+
+            if (snapshot.val().sender == myName) {
+                html += "<button data-id='" + snapshot.key + "' onclick='deleteMessage(this);'>";
+                    html += "Delete";
+                html += "</button>";
+            }
+            html += snapshot.val().sender + ": " + snapshot.val().message;
+            html += "</li>";
+
+            document.getElementById("messages").innerHTML += html;
+        });
+
+        function deleteMessage(self) {
+
+            var messageId = self.getAttribute("data-id");
+            firebase.database().ref("messages").child(messageId).remove();
+        }
+
+        firebase.database().ref("messages").on("child_removed", function (snapshot) {
+            document.getElementById("message-" + snapshot.key).innerHTML = "This message has been removed";
+        });
+
+    </script>
+
+</body>
+</html>
